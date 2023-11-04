@@ -1,0 +1,680 @@
+diff --git a/part1/pets_db.py b/part1/pets_db.py
+index 03355e1..5c157d9 100644
+--- a/part1/pets_db.py
++++ b/part1/pets_db.py
+@@ -2,46 +2,46 @@ import sqlite3
+ 
+ TABLE_SCHEMA = """
+     CREATE TABLE animals (
+-      animal_id integer,
++      animal_id integer primary key not null,
+       name text not null,
+       species text not null,
+       age integer not null
+     );
+     CREATE TABLE people ( 
+-      person_id integer,
++      person_id integer primary key not null,
+       name text not null,
+       age integer not null,
+       favorite_color text not null
+     );
+     CREATE TABLE people_animals (
+-      owner_id integer not null,
+-      pet_id integer not null
++      owner_id integer not null references people(person_id),
++      pet_id integer not null references animals(animal_id)
+     );
+ """
+ 
+ ANIMALS = [
+-  (1, "petey", "gray whale", 38),
+-  (2, "leyla", "gray whale", 43),
+-  (3, "thommy", "giant parrot", 21),
+-  (4, "ricky", "lobster", 5),
+-  (5, "martin", "cow", 12),
+-  (6, "shannon", "cow", 14),
+-  (7, "randolph", "lemur", 67),
++    (1, "petey", "gray whale", 38),
++    (2, "leyla", "gray whale", 43),
++    (3, "thommy", "giant parrot", 21),
++    (4, "ricky", "lobster", 5),
++    (5, "martin", "cow", 12),
++    (6, "shannon", "cow", 14),
++    (7, "randolph", "lemur", 67),
+ ]
+ 
+ PEOPLE = [
+-  (1, "scott", 23, "green"),
+-  (2, "bessie", 22, "pink"),
+-  (3, "karen", 27, "orange"),
++    (1, "scott", 23, "green"),
++    (2, "bessie", 22, "pink"),
++    (3, "karen", 27, "orange"),
+ ]
+ 
+ PEOPLE_ANIMALS = [
+-  (1, 4), # scott, ricky
+-  (2, 4),  # bessie, ricky
+-  (2, 2), # bessie, leyla
+-  (2, 7), # bessie, randolph
+-  (3, 3),  # karen, thommy
+-  (3, 5),  # karen, martin
++    (1, 4),  # scott, ricky
++    (2, 4),  # bessie, ricky
++    (2, 2),  # bessie, leyla
++    (2, 7),  # bessie, randolph
++    (3, 3),  # karen, thommy
++    (3, 5),  # karen, martin
+ ]
+ 
+ ###
+@@ -51,19 +51,23 @@ PEOPLE_ANIMALS = [
+ 
+ DB_NAME = "quiz_pets"
+ 
++
+ def get_connection():
+-  return sqlite3.connect(DB_NAME)
++    return sqlite3.connect(DB_NAME)
++
+ 
+ def drop_db():
+-  with get_connection() as con:
+-    for table in ["animals", "people", "people_animals", "favorite_foods"]:
+-      con.execute(f"drop table if exists {table}")
++    with get_connection() as con:
++        for table in ["animals", "people", "people_animals", "favorite_foods"]:
++            con.execute(f"drop table if exists {table}")
++
+ 
+ def create_db():
+-  drop_db()
++    drop_db()
+ 
+-  with get_connection() as con:
+-    con.executescript(TABLE_SCHEMA)
+-    con.executemany("INSERT INTO animals VALUES(?, ?, ?, ?)", ANIMALS)
+-    con.executemany("INSERT INTO people VALUES(?, ?, ?, ?)", PEOPLE)
+-    con.executemany("INSERT INTO people_animals VALUES(?, ?)", PEOPLE_ANIMALS)
+\ No newline at end of file
++    with get_connection() as con:
++        con.executescript(TABLE_SCHEMA)
++        con.executemany("INSERT INTO animals VALUES(?, ?, ?, ?)", ANIMALS)
++        con.executemany("INSERT INTO people VALUES(?, ?, ?, ?)", PEOPLE)
++        con.executemany(
++            "INSERT INTO people_animals VALUES(?, ?)", PEOPLE_ANIMALS)
+diff --git a/part1/question1.py b/part1/question1.py
+index 5c99fdb..a8aabe2 100644
+--- a/part1/question1.py
++++ b/part1/question1.py
+@@ -1,10 +1,10 @@
+ ################################################################################
+ #     ____                          __     _                          ___
+ #    / __ \  __  __  ___    _____  / /_   (_)  ____    ____          <  /
+-#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \         / / 
+-#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        / /  
+-#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /_/   
+-#                                                                        
++#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \         / /
++#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        / /
++#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /_/
++#
+ #  Question 1
+ ################################################################################
+ #
+@@ -14,22 +14,27 @@
+ # Read the test suite to know the values that these functions should return.
+ 
+ def get_city_temperature(city):
+-   if city == "Quito":
+-      return 22
+-   if city == "Sao Paulo":
+-      return 17
+-   if city == "San Francisco":
+-      return 16
++    if city == "Quito":
++        return 22
++    if city == "Sao Paulo":
++        return 17
++    if city == "San Francisco":
++        return 16
++    if city == "New York":
++        return 14
++
+ 
+ def get_city_weather(city):
+ 
+-  sky_condition = None
++    sky_condition = None
+ 
+-  if city == "Sao Paulo":
+-     sky_condition = "cloudy"
+-  elif city == "New York":
+-     sky_condition = "rainy"
++    if city == "Sao Paulo":
++        sky_condition = "cloudy"
++    elif city == "New York":
++        sky_condition = "rainy"
++    elif city == "Quito":
++        sky_condition = "sunny"
+ 
+-  temperature = get_city_temperature(city)
++    temperature = get_city_temperature(city)
+ 
+-  return str(temperature) + " degrees and " + sky_condition
+\ No newline at end of file
++    return str(temperature) + " degrees and " + sky_condition
+diff --git a/part1/question2.py b/part1/question2.py
+index 34a9b01..12257b0 100644
+--- a/part1/question2.py
++++ b/part1/question2.py
+@@ -1,21 +1,23 @@
+ ################################################################################
+-#     ____                          __     _                          ___ 
++#     ____                          __     _                          ___
+ #    / __ \  __  __  ___    _____  / /_   (_)  ____    ____          |__ \
+ #   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \         __/ /
+-#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        / __/ 
+-#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /____/ 
+-#                                                                         
++#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        / __/
++#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /____/
++#
+ #  Question 2
+ ################################################################################
+ #
+ # Instructions:
+-# Write a function that will swap a tuple of two items. For example, the function 
+-# should change (x, y) into (y, x). 
++# Write a function that will swap a tuple of two items. For example, the function
++# should change (x, y) into (y, x).
+ # Assign the function to `swapper` so that the function `run_swapper(..)` can use
+-# it. As always, there is a test suite that checks the result. It is in 
++# it. As always, there is a test suite that checks the result. It is in
+ # `question2_test.py.`
+ 
+-swapper = None
++def swapper(tuple):
++    return (tuple[1], tuple[0])
++
+ 
+ def run_swapper(list_of_tuples):
+-  return list(map(swapper, list_of_tuples))
+\ No newline at end of file
++    return list(map(swapper, list_of_tuples))
+diff --git a/part1/question3.py b/part1/question3.py
+index 04fab99..96c5c85 100644
+--- a/part1/question3.py
++++ b/part1/question3.py
+@@ -1,44 +1,72 @@
+ ################################################################################
+ #     ____                          __     _                          _____
+ #    / __ \  __  __  ___    _____  / /_   (_)  ____    ____          |__  /
+-#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \          /_ < 
+-#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        ___/ / 
+-#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /____/  
+-#                                                                          
++#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \          /_ <
++#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        ___/ /
++#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /____/
++#
+ #  Question 3
+ ################################################################################
+ #
+ # Instructions:
+-# Make a Python class for a magical oven that can combine ingredients at 
++# Make a Python class for a magical oven that can combine ingredients at
+ # different temperatures to craft special materials.
+-# 
++#
+ # The oven class should have the methods:
+ # - add(item) to add an oven to be combined
+ # - freeze() to freeze the ingredients
+ # - boil() to boil the ingredients
+ # - wait() to combine the ingredients with no change in temperature
+-# - get_output() to get the result 
++# - get_output() to get the result
+ #
+ # You will need to change the `make_oven()` function to return a new instance
+ # of your oven.
+ #
+-# The `alchemy_combine()` function will use your oven. You can see the expected 
++# The `alchemy_combine()` function will use your oven. You can see the expected
+ # formulas and their outputs in the test file, `question3_test.py`.
+ 
+ # This function should return an oven instance!
++
+ def make_oven():
+-  None
++    return Oven()
++
+ 
+ def alchemy_combine(oven, ingredients, temperature):
+-  
+-  for item in ingredients:
+-    oven.add(item)
+-
+-  if temperature < 0:
+-    oven.freeze()
+-  elif temperature >= 100:
+-    oven.boil()
+-  else:
+-    oven.wait()
+-
+-  return oven.get_output()
+\ No newline at end of file
++
++    for item in ingredients:
++        oven.add(item)
++
++    if temperature < 0:
++        oven.freeze()
++    elif temperature >= 100:
++        oven.boil()
++    else:
++        oven.wait()
++
++    return oven.get_output()
++
++
++class Oven:
++    def __init__(self):
++        self.ingredients = []
++        self.output = None
++
++    def add(self, item):
++        self.ingredients.append(item)
++
++    def freeze(self):
++        if "water" in self.ingredients and "air" in self.ingredients:
++            self.output = "snow"
++
++    def boil(self):
++        if "lead" in self.ingredients and "mercury" in self.ingredients:
++            self.output = "gold"
++
++        if "cheese" in self.ingredients and "dough" in self.ingredients and "tomato" in self.ingredients:
++            self.output = "pizza"
++
++    def wait(self):
++        self.output = "nothing"
++
++    def get_output(self):
++        return self.output
+diff --git a/part1/question3_test.py b/part1/question3_test.py
+index 6cb6c89..a1521e7 100644
+--- a/part1/question3_test.py
++++ b/part1/question3_test.py
+@@ -1,19 +1,22 @@
++from question3 import alchemy_combine, make_oven
++
++
+ def test_alchemy_combine():
+ 
+-  assert alchemy_combine(
+-    make_oven(),
+-    ["lead", "mercury"],
+-    5000
+-  ) == "gold"
++    assert alchemy_combine(
++        make_oven(),
++        ["lead", "mercury"],
++        5000
++    ) == "gold"
+ 
+-  assert alchemy_combine(
+-    make_oven(),
+-    ["water", "air"],
+-    -100
+-  ) == "snow"
++    assert alchemy_combine(
++        make_oven(),
++        ["water", "air"],
++        -100
++    ) == "snow"
+ 
+-  assert alchemy_combine(
+-    make_oven(),
+-    ["cheese", "dough", "tomato"],
+-    150
+-  ) == "pizza"
+\ No newline at end of file
++    assert alchemy_combine(
++        make_oven(),
++        ["cheese", "dough", "tomato"],
++        150
++    ) == "pizza"
+diff --git a/part1/question4.py b/part1/question4.py
+index 1e1b2bf..4ea1ba1 100644
+--- a/part1/question4.py
++++ b/part1/question4.py
+@@ -5,16 +5,16 @@ import pets_db
+ #    / __ \  __  __  ___    _____  / /_   (_)  ____    ____          / // /
+ #   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \        / // /_
+ #  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /       /__  __/
+-#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/          /_/   
+-#                                                                          
++#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/          /_/
++#
+ #  Question 4
+ ################################################################################
+ #
+ # Instructions:
+-# Question 4 and Question 5 are about writing SQL. THey use the database that is 
+-# created in the file `pets_db.py`. 
++# Question 4 and Question 5 are about writing SQL. THey use the database that is
++# created in the file `pets_db.py`.
+ # These questions use a database called SQLite. You do not need to install anything.
+-# In the file `pets_db.py` three tables are created. Data is then added to each 
++# In the file `pets_db.py` three tables are created. Data is then added to each
+ # of the tables. The questions below are about how the data in each of the tables
+ # is related.
+ 
+@@ -24,25 +24,33 @@ import pets_db
+ 
+ sql_pets_owned_by_nobody = """
+ 
+-Your SQL here.
++SELECT a.name, a.species, a.age from animals a 
++LEFT JOIN people_animals p ON p.pet_id = a.animal_id
++WHERE p.owner_id IS NULL;
+ 
+ """
+ 
+ # Part 4.B:
+-# Write SQL to select how the number of pets are older than their owners. 
++# Write SQL to select how the number of pets are older than their owners.
+ # The output should be an integer.
+ 
+ sql_pets_older_than_owner = """
+ 
+-Your SQL here.
++SELECT COUNT(*) FROM animals a
++INNER JOIN people_animals p ON p.pet_id = a.animal_id
++INNER JOIN people pe ON pe.person_id = p.owner_id
++WHERE a.age > pe.age;
+ 
+ """
+ 
+-# Part 4.C: BONUS CHALLENGE! 
++# Part 4.C: BONUS CHALLENGE!
+ # Write SQL to select the pets that are owned by Bessie and nobody else.
+ # The output should be a list of tuples in the format: (<person name>, <pet name>, <species>)
+ sql_only_owned_by_bessie = """ 
+ 
+-Your SQL here.
++SELECT pe.name, a.name, a.species FROM animals a
++INNER JOIN people_animals p ON p.pet_id = a.animal_id
++INNER JOIN people pe ON pe.person_id = p.owner_id
++WHERE pe.name = 'bessie' AND NOT EXISTS (SELECT * FROM people_animals p2 WHERE p2.pet_id = a.animal_id AND p2.owner_id != p.owner_id);
+ 
+-"""
+\ No newline at end of file
++"""
+diff --git a/part1/question5.py b/part1/question5.py
+index f76654f..3655cb0 100644
+--- a/part1/question5.py
++++ b/part1/question5.py
+@@ -1,15 +1,15 @@
+ ################################################################################
+ #     ____                          __     _                           ______
+ #    / __ \  __  __  ___    _____  / /_   (_)  ____    ____           / ____/
+-#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \         /___ \  
+-#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        ____/ /  
+-#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /_____/   
+-#                                                                            
++#   / / / / / / / / / _ \  / ___/ / __/  / /  / __ \  / __ \         /___ \
++#  / /_/ / / /_/ / /  __/ (__  ) / /_   / /  / /_/ / / / / /        ____/ /
++#  \___\_\ \__,_/  \___/ /____/  \__/  /_/   \____/ /_/ /_/        /_____/
++#
+ #  Question 5
+ ################################################################################
+ #
+ # Instructions:
+-# This questions continues to use the database we worked with in Question 4. In 
++# This questions continues to use the database we worked with in Question 4. In
+ # this question, we will made some modifications ot the table.
+ 
+ # Part 5.A:
+@@ -20,17 +20,22 @@
+ 
+ sql_create_favorite_foods = """
+ 
+-Your SQL here.
++CREATE TABLE favorite_foods (
++    food_id integer primary key NOT NULL,
++    name text NOT NULL,
++    vegetarian integer NOT NULL
++    );
+ 
+ """
+ 
+ # Part 5.B:
+ # Alter the animals and people tables by adding a new column to each called 'favorite_food_id'
+-# The test suite will verify the new changes by inserting some new rows. 
++# The test suite will verify the new changes by inserting some new rows.
+ 
+ sql_alter_tables_with_favorite_food = """
+ 
+-Your SQL here.
++ALTER TABLE animals ADD COLUMN favorite_food_id integer;
++ALTER TABLE people ADD COLUMN favorite_food_id integer;
+ 
+ """
+ 
+@@ -40,6 +45,8 @@ Your SQL here.
+ 
+ sql_select_all_vegetarian_pets = """
+ 
+-Your SQL here.
++SELECT a.name, f.name FROM animals a
++INNER JOIN favorite_foods f ON a.favorite_food_id = f.food_id
++WHERE f.vegetarian = 1
+ 
+-"""
+\ No newline at end of file
++"""
+diff --git a/part1/quiz_pets b/part1/quiz_pets
+new file mode 100644
+index 0000000..1e04adb
+Binary files /dev/null and b/part1/quiz_pets differ
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java b/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java
+new file mode 100644
+index 0000000..2413a3b
+--- /dev/null
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java
+@@ -0,0 +1,41 @@
++package org.velezreyes.quiz.question6;
++
++public class DrinkImpl implements Drink {
++    private String name;
++    private double price;
++    private boolean isFizzy;
++
++    public DrinkImpl(String name, double price, boolean isFizzy) {
++        this.name = name;
++        this.price = price;
++        this.isFizzy = isFizzy;
++    }
++
++    public String getName() {
++        return this.name;
++    }
++
++    public void setName(String name) {
++        this.name = name;
++    }
++
++    public double getPrice() {
++        return this.price;
++    }
++
++    public void setPrice(double price) {
++        this.price = price;
++    }
++
++    public boolean getIsFizzy() {
++        return this.isFizzy;
++    }
++
++    public void setIsFizzy(boolean isFizzy) {
++        this.isFizzy = isFizzy;
++    }
++
++    public boolean isFizzy() {
++        return getIsFizzy();
++    }
++}
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+index 85742c4..cdbeb59 100644
+--- a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+@@ -1,9 +1,53 @@
+ package org.velezreyes.quiz.question6;
+ 
+-public class VendingMachineImpl {
++import java.util.Dictionary;
++import java.util.Hashtable;
++
++public class VendingMachineImpl implements VendingMachine {
++  private double currentMoney;
++  private Dictionary<String, DrinkImpl> drinks;
++
++  public VendingMachineImpl() {
++    this.currentMoney = 0;
++    this.drinks = new Hashtable<String, DrinkImpl>();
++    this.addDrink(new DrinkImpl("ScottCola", 0.75, true));
++    this.addDrink(new DrinkImpl("KarenTea", 1.0, false));
++  }
++
++  public void addDrink(DrinkImpl drink) {
++    this.drinks.put(drink.getName(), drink);
++  }
++
++  public void removeDrink(String name) {
++    this.drinks.remove(name);
++  }
++
++  public double getCurrentMoney() {
++    return this.currentMoney;
++  }
++
++  public void setCurrentMoney(double currentMoney) {
++    this.currentMoney = currentMoney;
++  }
++
++  public void insertQuarter() {
++    this.currentMoney += 0.25;
++  }
++
++  public Drink pressButton(String name) throws NotEnoughMoneyException, UnknownDrinkException {
++    DrinkImpl drink = this.drinks.get(name);
++    if (drink == null) {
++      throw new UnknownDrinkException();
++    }
++    if (this.currentMoney >= drink.getPrice()) {
++      this.currentMoney -= drink.getPrice();
++      return drink;
++    } else {
++      throw new NotEnoughMoneyException();
++    }
++  }
+ 
+   public static VendingMachine getInstance() {
+-    // Fix me!
+-    return null;
++    return new VendingMachineImpl();
+   }
+ }
+diff --git a/part3/security_question.md b/part3/security_question.md
+new file mode 100644
+index 0000000..abdcaaa
+--- /dev/null
++++ b/part3/security_question.md
+@@ -0,0 +1,85 @@
++To secure the tech startup's system, which includes a different elements and roles, we should consider the following aspects for each component of the infrastructure:
++
++Mobile App:
++
++1. Data Transmission: Implement secure communication through TLS/SSL to protect data in transit between the mobile app and backend services. Sensitive information, such as passwords or credit card data, should be strongly encrypted.
++
++2. Authentication and Authorization: Enforce strong authentication methods and secure session management to prevent unauthorized access. Also, implement role-based access control to ensure that only authorized actions are allowed.
++
++3. Secure Offline Storage: Protect locally stored data on the mobile device, including session tokens, with encryption.
++
++4. Secure Code: Perform regular code reviews to identify and mitigate mobile-specific vulnerabilities such as insecure data storage and sensitive data exposure
++
++Web Frontend:
++
++1. Input Validation: Clean up user inputs to prevent cross-site scripting (XSS) attacks. Use security headers like Content Security Policy (CSP) to mitigate the risk of XSS.
++
++2. Security Headers: Implement HTTP security headers to enhance the security of the web application. Examples include Strict-Transport-Security (HSTS) and X-Content-Type-Options.
++
++3. Authentication and Session Management: Ensure that user sessions are securely managed and protected from session fixation and hijacking attacks. Ensure that all session information in cookies, cache and local storage is encrypted.
++
++4. API Security: Validate and sanitize data sent to and received from the Python backend to prevent security misconfigurations and injection attacks.
++
++MySQL Database:
++
++1. Secure Database Access: Limit access to the MySQL database to only the necessary components and employees. We can use AWS IAM roles and ensure strong password policies.
++
++2. Data Encryption: Encrypt data at rest using encryption mechanisms provided by a cloud provider, for example AWS RDS encryption.
++
++3. Database Auditing: Enable database auditing and logging to monitor and detect suspicious activities. Include abnormal activity alarms in the database.
++
++Python Backend:
++
++1. API Security: Implement input validation, and ensure all data sent to the database is properly sanitized and validated to prevent injection attacks.
++
++2. Authentication and Authorization: Enforce strong authentication and authorization controls. Implement role-based access control by adding middleware and API rate limiting. For authorization endpoints, return tokens encrypted with a strongly secret key.
++
++3. Error Handling: Implement proper error handling to avoid leaking sensitive information and provide informative but non-exploitable error messages.
++
++4. Secure Libraries: Regularly update libraries and dependencies to mitigate known vulnerabilities.
++
++Employees:
++
++1. Access Control: Follow the principle of least privilege. Grant employees only the permissions necessary for their roles and responsibilities.
++
++2. User Training: Provide security training to all employees, making them aware of security best practices, the importance of data protection, alerting them to social engineering attacks and how to report security incidents. Develop protocols and step-by-step guides to mitigate damage in the event of an attack.
++
++3. Monitoring and Audit Trails: Monitor employee actions, especially those with access to customer data. Maintain audit trails for accountability and incident response.
++
++4. Offboarding: Ensure that access is revoked promptly when an employee leaves the organization.
++
++By addressing these security issues specific to each infrastructure component and ensuring proper security controls, we can significantly improve the overall security of our application. Also, regular security audits and assessments should also be part of the security strategy to keep abreast of evolving threats.
++
++To finish, next is a summary based on the OWASP Top 10 for 2021:
++
++OWASP Top 10 - 2021 summary:
++
++1.  Broken access control:
++    Implement robust access control mechanisms to prevent unauthorized access to sensitive data and functionality. Restrict access to the database and other critical resources. For example, the MySQL database would have 3 different roles for the employees that only allow certain functions. Regularly review and enforce permissions and privileges based on user and employee roles.
++
++2.  Cryptographic Failures:
++    Ensure that sensitive data, such as customer passwords and personal information, is properly encrypted both in transit and at rest. Verify that the app follows secure cryptographic practices and uses strong encryption algorithms. Encryption keys should be generated randomly and stored in memory.
++
++3.  Injection
++    Ensure that input from mobile apps, web frontend, and any external sources is properly sanitized, validated and authorized before interacting with the MySQL database or other components. Implement parameterized queries and properly constructed stored procedures to prevent SQL injection.
++
++4.  Insecure design:
++    Evaluate the design of the app to ensure it follows secure design principles. This includes secure session management, separation of user roles and permissions, and implementing a strong authentication mechanism.
++
++5.  Security misconfiguration:
++    Audit the Kubernetes containers and AWS configurations to identify and rectify any security misconfigurations. Follow the principle of least privilege and review permissions to minimize the attack surface.
++
++6.  Vulnerable and Outdated Components:
++    Regularly update and patch components, libraries, and dependencies to mitigate known vulnerabilities. Ensure that cloud providers have robust security protocols and minimal vulnerabilities. Utilize vulnerability scanning tools to identify and address potential issues within the infrastructure.
++
++7.  Identification and Authentication Failures:
++    Enforce strong authentication mechanisms for all users, including software engineers employees, customer support employees, and the sales employee. Use multi-factor authentication (MFA) where possible. Protect passwords with strong hashing, nd salting. Regularly review and audit authentication processes. Use VPN and corporate email for secure communication channels.
++
++8.  Software and Data Integrity Failures:
++    Validate and clean data entry to prevent tampering. Properly manage errors to prevent data leakage and consider applying checksums or digital signatures to verify data integrity.
++
++9.  Security Logging and Monitoring Failures:
++    Establish robust logging and monitoring mechanisms to detect and respond to security incidents. Ensure that logs capture relevant security events, and that you have processes in place to review and act on these logs quickly.
++
++10. Server-Side Request Forgery (SSRF):
++    Review the application to prevent SSRF attacks. Restrict the ability of an attacker to make requests to unintended internal resources, and validate user inputs to prevent such attacks.
